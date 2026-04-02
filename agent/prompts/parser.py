@@ -15,9 +15,10 @@ equipment transitions, and any named-swimmer variants.
 equipment, instructions, and lane-specific intervals where present.
 6. Classify the workout type using the heuristics from conventions (see Workout Type Classification below).
 7. Score your confidence in the parse (see Confidence Scoring below).
-8. Call `validate_workout` to check the parsed result.
+8. Call `validate_workout` to check the parsed result. The validation report includes a \
+calculated `total_yardage` JSON block — copy it into your workout object before storing.
 9. If you encounter any abbreviation or pattern you can't confidently resolve, call `flag_unknown`.
-10. Call `store_workout` with the final structured result.
+10. Call `store_workout` with the final structured result (including `total_yardage`).
 
 ## Date Extraction
 
@@ -82,7 +83,52 @@ different sets = a variant workout. Store it in the `variants` array.
 
 ## Output Schema
 
-Your output must be a valid Workout JSON object. Key fields you MUST populate:
+Your output MUST conform exactly to the Pydantic schema below. Using wrong field names \
+(e.g., `stroke_type` instead of `stroke`, `time_limit` instead of `interval`, or bare \
+`rest_type` strings instead of a `Rest` object) will cause validation failures.
+
+### SetItem fields (each set within a section):
+```
+{
+  "repeats": 4,                          // int, default 1
+  "distance": 75,                        // int, total yards per repeat
+  "distance_display": "4x75",            // string, coach's original notation
+  "stroke": "Kick",                      // string, canonical name: "Swim", "Kick", "Pull", "Choice", etc.
+  "stroke_short": "K",                   // string, coach's abbreviation: "Sw", "K", "P", "Ch"
+  "equipment": ["Fins"],                 // list of strings
+  "interval": {                          // Interval OBJECT (not a string or "time_limit")
+    "type": "flat",                      //   one of: "flat", "range", "split", "time_cap"
+    "value": "1:20",                     //   for flat intervals
+    "fast": null,                        //   for range intervals (L6 time)
+    "slow": null,                        //   for range intervals (L1 time)
+    "display": "@1:20"                   //   original notation
+  },
+  "rest": {                              // Rest OBJECT (not a string)
+    "type": "rest",                      //   one of: "rest", "active_rest"
+    "seconds": 10,                       //   int
+    "display": "R:10"                    //   original notation
+  },
+  "instruction": "Build",                // string, e.g. "F/E, E/F", "Fast In Heats"
+  "lane_intervals": {                    // LaneIntervals object, when lanes have different intervals
+    "L6": "1:30", "L5": "1:35", "L4": "1:40",
+    "L3": "1:45", "L2": "1:50", "L1": "2:00"
+  },
+  "lane_rep_counts": null,               // LaneIntervals object, when lanes do different # of reps
+  "raw_text": "4x75 K R:10"             // original email text for this set
+}
+```
+
+### Section fields:
+```
+{
+  "name": "Warm Up",                     // "Warm Up", "Main Set", "Equipment Set", "Warm Down", etc.
+  "equipment_context": ["Fins"],         // equipment active for the entire section
+  "sets": [ ... ],                       // array of SetItem objects (see above)
+  "raw_text": "..."                      // original email text for this section
+}
+```
+
+### Top-level Workout fields you MUST populate:
 - `date`: The workout date (YYYY-MM-DD)
 - `day_of_week`: Lowercase day name
 - `week_of`: Monday of the workout week (YYYY-MM-DD)
@@ -90,8 +136,48 @@ Your output must be a valid Workout JSON object. Key fields you MUST populate:
 - `confidence`: Float 0.0-1.0 reflecting parse quality
 - `email_message_id`: From the input metadata
 - `email_thread_id`: From the input metadata
-- `sections`: The parsed workout sections
+- `sections`: Array of Section objects (see above)
+- `total_yardage`: Yardage estimate from the validation report (includes `estimated` and \
+optional `by_lane` when lanes have different rep counts)
 - `flags`: Any unresolved items
+
+### Example — a minimal parsed set:
+```json
+{
+  "sections": [
+    {
+      "name": "Warm Up",
+      "equipment_context": [],
+      "sets": [
+        {
+          "repeats": 1,
+          "distance": 400,
+          "distance_display": "400",
+          "stroke": "Choice",
+          "stroke_short": "Ch",
+          "equipment": [],
+          "interval": null,
+          "rest": null,
+          "instruction": null,
+          "raw_text": "400 Ch"
+        },
+        {
+          "repeats": 4,
+          "distance": 75,
+          "distance_display": "4x75",
+          "stroke": "Kick",
+          "stroke_short": "K",
+          "equipment": [],
+          "interval": null,
+          "rest": {"type": "rest", "seconds": 10, "display": "R:10"},
+          "instruction": null,
+          "raw_text": "4x75 K R:10"
+        }
+      ]
+    }
+  ]
+}
+```
 
 Use the `store_workout` tool to save the final result.
 """
