@@ -41,6 +41,28 @@ Swim workout email parser built with Google ADK + Anthropic LLMs.
 - **Package manager:** uv
 - **Gmail:** OAuth2 Desktop flow, token in token.json (gitignored)
 
+## Git Workflow
+
+**Always use feature branches.** Never commit directly to `main`.
+
+1. Create a feature branch from `main`: `git checkout -b <branch-name>`
+   - Use descriptive names: `phase2/prompt-improvements`, `fix/lane-interval-parsing`, `feat/workout-analyzer`
+2. Make commits on the feature branch as work progresses
+3. When ready, push the branch and create a PR via `gh pr create`
+4. Merge to `main` only via pull request (squash merge preferred)
+5. After merge, delete the feature branch
+
+**Branch naming conventions:**
+- `feat/` — new features
+- `fix/` — bug fixes
+- `phase2/`, `phase3/` — phase-scoped work
+- `refactor/` — code improvements without behavior change
+
+**PR conventions:**
+- Keep PRs focused — one logical change per PR
+- PR description should summarize what changed and why
+- Run tests and lint before creating PR: `uv run python -m pytest tests/ -v && uv run python -m ruff check .`
+
 ## Environment
 
 Secrets and config in `.env` (gitignored). See `.env.example` for template.
