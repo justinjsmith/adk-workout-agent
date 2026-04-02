@@ -45,3 +45,45 @@ def test_prompt_references_output_schema_fields():
     ]
     for field in required_fields:
         assert field in PARSER_SYSTEM_PROMPT, f"Prompt missing required field: {field}"
+
+
+def test_prompt_has_set_item_schema():
+    """Parser prompt must document SetItem fields to prevent schema deviations."""
+    # Must use correct field names, not common alternatives
+    assert "\"stroke\":" in PARSER_SYSTEM_PROMPT
+    assert "\"stroke_short\":" in PARSER_SYSTEM_PROMPT
+    assert "\"interval\":" in PARSER_SYSTEM_PROMPT
+    assert "\"rest\":" in PARSER_SYSTEM_PROMPT
+    assert "\"repeats\":" in PARSER_SYSTEM_PROMPT
+    assert "\"distance\":" in PARSER_SYSTEM_PROMPT
+    assert "\"distance_display\":" in PARSER_SYSTEM_PROMPT
+    assert "\"raw_text\":" in PARSER_SYSTEM_PROMPT
+
+
+def test_prompt_has_rest_object_schema():
+    """Parser prompt must show Rest as an object with type/seconds/display fields."""
+    assert "\"type\": \"rest\"" in PARSER_SYSTEM_PROMPT
+    assert "\"seconds\":" in PARSER_SYSTEM_PROMPT
+    assert "\"active_rest\"" in PARSER_SYSTEM_PROMPT
+
+
+def test_prompt_has_interval_object_schema():
+    """Parser prompt must show Interval as an object with type enum and value fields."""
+    assert "\"type\": \"flat\"" in PARSER_SYSTEM_PROMPT
+    assert "\"range\"" in PARSER_SYSTEM_PROMPT
+    assert "\"fast\":" in PARSER_SYSTEM_PROMPT
+    assert "\"slow\":" in PARSER_SYSTEM_PROMPT
+
+
+def test_prompt_warns_against_wrong_field_names():
+    """Parser prompt must explicitly warn against common schema deviations."""
+    assert "stroke_type" in PARSER_SYSTEM_PROMPT  # warns against this mistake
+    assert "time_limit" in PARSER_SYSTEM_PROMPT  # warns against this mistake
+    assert "rest_type" in PARSER_SYSTEM_PROMPT  # warns against this mistake
+
+
+def test_prompt_has_example():
+    """Parser prompt must include a concrete JSON example."""
+    assert "\"Kick\"" in PARSER_SYSTEM_PROMPT
+    assert "\"K\"" in PARSER_SYSTEM_PROMPT
+    assert "R:10" in PARSER_SYSTEM_PROMPT
