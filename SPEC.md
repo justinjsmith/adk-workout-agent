@@ -488,7 +488,8 @@ Next parse loads updated conventions + examples
 ### Tech Stack
 
 - **Backend:** Python (Flask or FastAPI), same codebase as the agent
-- **Frontend:** Server-rendered HTML + minimal JS (HTMX or similar). No heavy SPA framework — keep it simple for a personal project.
+- **Frontend:** Server-rendered HTML + minimal JS (HTMX for interactivity). No heavy SPA framework — keep it simple for a personal project.
+- **UI Components:** [Material Web](https://material-web.dev/) (Google's official web components library). Works directly in Jinja2 templates with no build step — imported via ESM. Key components: `md-tabs` (view toggles), `md-filter-chip` (lane selector), `md-card` (workout cards), `md-filled-button`/`md-outlined-button` (actions), `md-text-field` (review editing), `md-badge` (status/type indicators).
 - **Auth:** Google Sign-In (OAuth 2.0). Restrict to a whitelist of allowed Google accounts.
 - **Hosting:** Cloud Run (same service as the agent, or a separate service in the same project)
 
@@ -543,6 +544,17 @@ Next parse loads updated conventions + examples
 
 The print layout is critical — this is the primary physical artifact swimmers use at the pool.
 
+**Styling approach:** The print view uses its own dedicated template and `print.css` — no Material Web components. However, it is *not* plain text. It uses purposeful visual styling for scannability at arm's length on a pool deck:
+
+- **Bold/larger text** for repeat counts (`3x`) and section headers (`MAIN SET`)
+- **Equipment labels** inline with sets (e.g., a small `FINS` or `P&B` tag)
+- **Horizontal dividers** between sections (warm up, main set, warm down)
+- **Indentation** for sets within a repeated block
+- **Subtle background shading** for equipment transition markers (`Fins On`, `Pads & Buoy On`)
+- **Black/white with minimal accent** — toner-friendly, high contrast
+
+Target: fit on a single printed page. Font size and density tradeoffs to be iterated on with real workouts.
+
 ```
 +--------------------------------------------------+
 |  STINGRAYS - Thursday 4/02/26 - Sprint     L5    |
@@ -555,6 +567,8 @@ The print layout is critical — this is the primary physical artifact swimmers 
 |  3x100 Sw  R:10                                   |
 |  3x50 P  R:10                                     |
 |  8x50 Sw  @:55  F/E, E/F, E, F                   |
+|                                                   |
+|  ─────────────── FINS ON ───────────────          |
 |                                                   |
 |  MAIN SET                                         |
 |  1x                                               |

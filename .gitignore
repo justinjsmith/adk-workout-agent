@@ -52,6 +52,8 @@ raw-emails/
 
 # Fixtures with real email content
 tests/fixtures/real/
+tests/fixtures/emails/
+tests/fixtures/parse_results/
 
 # OAuth credentials and tokens
 credentials.json

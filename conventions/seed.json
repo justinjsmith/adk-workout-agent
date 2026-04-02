@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "updatedAt": null,
+  "abbreviations": {
+    "Sw": { "meaning": "Swim", "category": "stroke_type", "confidence": 1.0, "source": "seed" },
+    "K": { "meaning": "Kick", "category": "stroke_type", "confidence": 1.0, "source": "seed" },
+    "P": { "meaning": "Pull", "category": "stroke_type", "confidence": 1.0, "source": "seed" },
+    "Ch": { "meaning": "Choice", "category": "stroke_modifier", "confidence": 1.0, "source": "seed" },
+    "Fr": { "meaning": "Freestyle", "category": "stroke", "confidence": 1.0, "source": "seed" },
+    "IM": { "meaning": "Individual Medley", "category": "stroke", "confidence": 1.0, "source": "seed" },
+    "ST": { "meaning": "Stroke (non-free)", "category": "stroke", "confidence": 1.0, "source": "seed" },
+    "Fins": { "meaning": "Fins", "category": "equipment", "confidence": 1.0, "source": "seed" },
+    "Pad": { "meaning": "Paddles", "category": "equipment", "confidence": 1.0, "source": "seed" },
+    "Pads": { "meaning": "Paddles", "category": "equipment", "confidence": 1.0, "source": "seed" },
+    "B": { "meaning": "Pull Buoy", "category": "equipment", "confidence": 1.0, "source": "seed" },
+    "Buoy": { "meaning": "Pull Buoy", "category": "equipment", "confidence": 1.0, "source": "seed" },
+    "LB": { "meaning": "Lungbuster", "category": "breathing_pattern", "confidence": 1.0, "source": "seed" },
+    "TX": { "meaning": "Texas Kick", "category": "drill_modifier", "confidence": 0.9, "source": "seed" },
+    "AR": { "meaning": "Active Rest", "category": "rest_type", "confidence": 1.0, "source": "seed" },
+    "LT": { "meaning": "Long Turns", "category": "instruction", "confidence": 1.0, "source": "seed" },
+    "F": { "meaning": "Fast", "category": "effort_modifier", "confidence": 1.0, "source": "seed" },
+    "E": { "meaning": "Easy", "category": "effort_modifier", "confidence": 1.0, "source": "seed" }
+  },
+  "structuralRules": [
+    {
+      "rule": "When 6 consecutive bare numbers appear after a set line, they are lane intervals mapped L6 through L1 (fastest lane first).",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Repeat notation: '4x75' means 4 repeats of 75 yards. '2x' alone on a line means repeat the following block twice.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Range intervals like '@1:30-2:00' mean L6 gets 1:30, L1 gets 2:00, intermediate lanes interpolated.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Split intervals like '20/60' mean go on :20, with extra rest to :60.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Section headers end with a colon or are on their own line: 'Warm Up:', 'Main Set', 'Sw Set', 'Equipment Set', 'Warm Down', etc.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Equipment transitions are marked by lines like 'Fins On', 'Fins Off, Pads & Buoy On', 'Pads & Buoy Off'.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "R:10 means 10 seconds rest between repeats.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "O: / E: prefixes mean Odd / Even repeats (alternating pattern).",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "A line with swimmer names (e.g., 'Patricia/Will/Dustin') followed by a different set indicates a named-swimmer variant workout.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Numbers in parentheses like '(1x)' next to a lane number mean that lane only does 1 round instead of the default repeat count.",
+      "confidence": 0.9,
+      "source": "seed"
+    }
+  ],
+  "workoutTypeHeuristics": [
+    { "pattern": "Fast In Heats", "suggestsType": "sprint" },
+    { "pattern": "Heats", "suggestsType": "sprint" },
+    { "pattern": "Race Pace", "suggestsType": "sprint" },
+    { "pattern": "Pace Finder", "suggestsType": "distance" },
+    { "pattern": "500 Pace", "suggestsType": "threshold" },
+    { "pattern": "Threshold", "suggestsType": "threshold" },
+    { "pattern": "Descend", "suggestsType": "threshold" },
+    { "pattern": "Build", "suggestsType": "aerobic" },
+    { "pattern": "Speed Play", "suggestsType": "aerobic" }
+  ]
+}
