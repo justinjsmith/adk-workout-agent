@@ -16,7 +16,7 @@ A Google ADK agent that monitors Gmail for swim workout emails from Coach Michae
 
 ### Email Patterns
 
-- **Sender:** `michael.Soderlund@graphicpkg.com`
+- **Sender:** `$COACH_EMAIL` (configured in `.env`)
 - **Cadence:** 3 workouts per week, typically Mon/Wed/Fri (schedule varies — coach specifies in email body)
 - **Threading:** Usually one thread per week (`RE: Practices Week of X/XX/XX`), each reply adds the next day's workout. Threading is not guaranteed — sometimes workouts arrive as separate emails.
 - **Content:** Plain text in email body. Each email may contain:
@@ -156,7 +156,7 @@ Swimmer's Browser / Printer
 
 **Responsibilities:**
 1. Authenticate to Gmail API using stored OAuth credentials
-2. Query for new messages from `michael.Soderlund@graphicpkg.com` since last check
+2. Query for new messages from `$COACH_EMAIL` (configured in `.env`) since last check
 3. For each new message:
    - Extract plain-text body
    - Strip quoted reply chains (everything after `From: Soderlund, Michael\nSent:`)

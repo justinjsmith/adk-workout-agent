@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+# Pre-commit hook: block secrets and raw email content from being committed.
+
+set -e
+
+RED='\033[0;31m'
+NC='\033[0m'
+
+BLOCKED=0
+
+# 1. Block files that should never be committed
+BLOCKED_PATTERNS=(
+    '\.eml$'
+    '\.mbox$'
+    'credentials\.json$'
+    'client_secret.*\.json$'
+    'token\.json$'
+    'token\.pickle$'
+    '\.p12$'
+    '\.pem$'
+    '\.env$'
+    '\.env\.local$'
+    'application_default_credentials\.json$'
+)
+
+for pattern in "${BLOCKED_PATTERNS[@]}"; do
+    files=$(git diff --cached --name-only | grep -E "$pattern" || true)
+    if [ -n "$files" ]; then
+        echo -e "${RED}BLOCKED: Credential or email file staged for commit:${NC}"
+        echo "$files"
+        BLOCKED=1
+    fi
+done
+
+# 2. Scan staged file contents for secrets patterns
+SECRET_PATTERNS=(
+    'ANTHROPIC_API_KEY=sk-ant-'        # Anthropic key with actual value
+    'GOOGLE_API_KEY=[A-Za-z0-9]'       # Google key with actual value
+    'client_secret.*apps\.googleusercontent\.com'
+    'AIza[0-9A-Za-z_-]{35}'           # Google API key
+    'sk-ant-[0-9A-Za-z_-]{20,}'       # Anthropic API key (min length to avoid false positives)
+    'ya29\.[0-9A-Za-z_-]+'            # Google OAuth access token
+    'gho_[0-9A-Za-z]{36}'             # GitHub OAuth token
+)
+
+for pattern in "${SECRET_PATTERNS[@]}"; do
+    matches=$(git diff --cached -U0 -- ':!.githooks/*' ':!.env.example' | grep -E "^\+" | grep -E "$pattern" || true)
+    if [ -n "$matches" ]; then
+        echo -e "${RED}BLOCKED: Possible secret detected in staged changes:${NC}"
+        echo "  Pattern: $pattern"
+        echo "  Run 'git diff --cached' to inspect."
+        BLOCKED=1
+    fi
+done
+
+# 3. Scan for bulk email addresses (more than 3 email addresses in a single added line)
+email_lines=$(git diff --cached -U0 -- '*.py' '*.json' '*.yaml' '*.yml' '*.txt' | \
+    grep -E "^\+" | \
+    grep -cE '([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}.*){3,}' || true)
+if [ "$email_lines" -gt 0 ] 2>/dev/null; then
+    echo -e "${RED}BLOCKED: Lines with 3+ email addresses detected (possible raw email headers).${NC}"
+    echo "  Found in $email_lines line(s). Run 'git diff --cached' to inspect."
+    BLOCKED=1
+fi
+
+if [ "$BLOCKED" -eq 1 ]; then
+    echo ""
+    echo "Commit blocked. Fix the issues above, or use --no-verify to bypass (not recommended)."
+    exit 1
+fi

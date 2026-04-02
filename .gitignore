@@ -43,3 +43,28 @@ htmlcov/
 
 # uv
 uv.lock
+
+# Raw email data (never commit workout emails)
+*.eml
+*.mbox
+emails/
+raw-emails/
+
+# Fixtures with real email content
+tests/fixtures/real/
+
+# OAuth credentials and tokens
+credentials.json
+token.json
+token.pickle
+*.p12
+*.pem
+client_secret*.json
+
+# Firestore exports
+firestore-export/
+
+# Local data
+data/
+*.db
+*.sqlite
