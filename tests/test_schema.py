@@ -2,6 +2,7 @@
 
 from shared.schema import (
     ConventionsDoc,
+    EffortProfileEntry,
     Flag,
     FlagType,
     Interval,
@@ -12,6 +13,7 @@ from shared.schema import (
     Section,
     SetItem,
     Workout,
+    WorkoutAnalysis,
     WorkoutStatus,
     WorkoutType,
     YardageEstimate,
@@ -142,3 +144,57 @@ def test_conventions_doc():
     )
     assert doc.abbreviations["Sw"].meaning == "Swim"
     assert len(doc.structural_rules) == 1
+
+
+def test_workout_analysis():
+    analysis = WorkoutAnalysis(
+        energy_systems=["aerobic", "anaerobic_threshold"],
+        workout_narrative="This workout builds from an easy warm-up to threshold work.",
+        coaching_intent="The descending rest trains lactate tolerance.",
+        type_confidence=0.9,
+        effort_profile=[
+            EffortProfileEntry(section="Warm Up", intensity_pct=30, energy_system="aerobic"),
+            EffortProfileEntry(
+                section="Main Set",
+                intensity_pct=80,
+                energy_system="anaerobic_threshold",
+            ),
+            EffortProfileEntry(section="Warm Down", intensity_pct=25, energy_system="aerobic"),
+        ],
+    )
+    assert len(analysis.energy_systems) == 2
+    assert analysis.type_confidence == 0.9
+    assert len(analysis.effort_profile) == 3
+    assert analysis.effort_profile[1].intensity_pct == 80
+
+
+def test_workout_with_analysis():
+    workout = Workout(
+        day_of_week="wednesday",
+        workout_type=WorkoutType.THRESHOLD,
+        confidence=0.85,
+        sections=[
+            Section(
+                name="Main Set",
+                sets=[SetItem(repeats=8, distance=100, stroke="Swim")],
+            ),
+        ],
+        analysis=WorkoutAnalysis(
+            energy_systems=["anaerobic_threshold"],
+            workout_narrative="Threshold set.",
+            coaching_intent="Build lactate clearance.",
+            type_confidence=0.9,
+            effort_profile=[
+                EffortProfileEntry(
+                    section="Main Set",
+                    intensity_pct=80,
+                    energy_system="anaerobic_threshold",
+                ),
+            ],
+        ),
+    )
+    assert workout.analysis is not None
+    assert workout.analysis.type_confidence == 0.9
+    json_str = workout.model_dump_json()
+    restored = Workout.model_validate_json(json_str)
+    assert restored.analysis.energy_systems == ["anaerobic_threshold"]

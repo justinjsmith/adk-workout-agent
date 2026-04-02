@@ -136,6 +136,27 @@ class ParseMetadata(BaseModel):
     raw_email_text: str = ""
 
 
+# --- Analysis Models ---
+
+
+class EffortProfileEntry(BaseModel):
+    """Effort profile for a single section of the workout."""
+
+    section: str  # Section name, e.g. "Warm Up", "Main Set"
+    intensity_pct: int  # Estimated intensity 0-100
+    energy_system: str  # "aerobic", "anaerobic_glycolytic", "atp_cp"
+
+
+class WorkoutAnalysis(BaseModel):
+    """Physiological analysis of a parsed workout."""
+
+    energy_systems: list[str] = Field(default_factory=list)  # ["aerobic", "anaerobic_threshold"]
+    workout_narrative: str = ""  # "This workout builds from..."
+    coaching_intent: str = ""  # "The descending rest pattern trains..."
+    type_confidence: float = 0.0  # Confidence in workout type based on physiology
+    effort_profile: list[EffortProfileEntry] = Field(default_factory=list)
+
+
 # --- Top-Level Workout Model ---
 
 
@@ -161,6 +182,7 @@ class Workout(BaseModel):
     variants: list[Variant] = Field(default_factory=list)
 
     total_yardage: Optional[YardageEstimate] = None
+    analysis: Optional[WorkoutAnalysis] = None
     metadata: Optional[ParseMetadata] = None
 
     model_config = {"populate_by_name": True}

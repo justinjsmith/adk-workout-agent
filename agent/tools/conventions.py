@@ -39,11 +39,11 @@ def _load_conventions_from_seed() -> ConventionsDoc:
     )
 
 
-def load_conventions() -> str:
-    """Load the current conventions document.
+def get_conventions_text() -> str:
+    """Return conventions as formatted text for embedding in prompts.
 
-    Returns the conventions as a formatted string for the agent to use.
-    In Phase 1 this loads from the seed file; later it will load from Firestore.
+    This is used to pre-load conventions into the parser prompt,
+    eliminating the need for a tool call at runtime.
     """
     global _conventions_cache
     if _conventions_cache is None:
@@ -51,7 +51,6 @@ def load_conventions() -> str:
 
     doc = _conventions_cache
 
-    # Format for the agent
     lines = [f"# Conventions (version {doc.version})", ""]
 
     lines.append("## Abbreviations")
@@ -69,6 +68,15 @@ def load_conventions() -> str:
         lines.append(f"  - '{h.pattern}' → {h.suggests_type}")
 
     return "\n".join(lines)
+
+
+def load_conventions() -> str:
+    """Load the current conventions document.
+
+    Returns the conventions as a formatted string for the agent to use.
+    In Phase 1 this loads from the seed file; later it will load from Firestore.
+    """
+    return get_conventions_text()
 
 
 def lookup_abbreviation(abbreviation: str) -> str:
