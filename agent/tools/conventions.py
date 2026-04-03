@@ -76,6 +76,7 @@ def _load_conventions() -> ConventionsDoc:
 def get_conventions_text() -> str:
     """Return conventions as formatted text for embedding in prompts.
 
+
     This is used to pre-load conventions into the parser prompt,
     eliminating the need for a tool call at runtime.
     """
