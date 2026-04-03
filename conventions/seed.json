@@ -71,6 +71,21 @@
       "rule": "Numbers in parentheses like '(1x)' next to a lane number mean that lane only does 1 round instead of the default repeat count.",
       "confidence": 0.9,
       "source": "seed"
+    },
+    {
+      "rule": "When a lane interval has '(3x)' after it (e.g., '1:45 (3x)'), that interval applies to multiple consecutive lanes. Count the total entries including expanded (Nx) groups to map L6 through L1. Store the rep count modifier in lane_rep_counts.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "'Skip' in a lane interval position means that lane does not do the set. Store as 'Skip' in lane_intervals.",
+      "confidence": 1.0,
+      "source": "seed"
+    },
+    {
+      "rule": "Lane-specific alternatives like '45/50' in an interval line mean different values for different contexts (e.g., yards vs meters, or alternating). Store the full notation as the lane interval value.",
+      "confidence": 0.9,
+      "source": "seed"
     }
   ],
   "workoutTypeHeuristics": [
