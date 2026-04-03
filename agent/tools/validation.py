@@ -100,9 +100,7 @@ def validate_workout(workout_json: str) -> str:
                     f"Verify this is correct."
                 )
             if s.repeats and s.repeats > 50:
-                warnings.append(
-                    f"Repeat count {s.repeats} in '{section.name}' seems very high."
-                )
+                warnings.append(f"Repeat count {s.repeats} in '{section.name}' seems very high.")
 
     # Calculate yardage
     yardage = calculate_yardage(workout)
