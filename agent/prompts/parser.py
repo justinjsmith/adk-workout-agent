@@ -71,10 +71,50 @@ Factors that reduce confidence:
 - Missing or inconsistent lane interval counts
 - Unusual formatting that deviates from typical coach patterns
 
+## Equipment Transitions
+
+Equipment is **stateful** — maintain a running `active_equipment` list as you parse top-to-bottom.
+
+### Rules
+1. **"X On"** adds X to active equipment: "Fins On" → active = ["Fins"]
+2. **"X Off"** removes X: "Fins Off" → active = []
+3. **Compound transitions** combine additions and removals in one line:
+   - "Fins Off, Pads & Buoy On" → remove Fins, add Paddles + Pull Buoy → active = ["Paddles", "Pull Buoy"]
+4. **"All Off"** or bare "Off" clears all equipment → active = []
+5. **Equipment transitions create section boundaries** — start a new section when equipment changes.
+6. Sets inherit the current `active_equipment` into their `equipment` field.
+7. The section's `equipment_context` must match the active equipment for that section.
+
+### Equipment name mapping
+Use the canonical names from the conventions (e.g., "Paddles" not "Pads", "Pull Buoy" not "Buoy"). \
+Common mappings: Fins → Fins, Pads/Pad → Paddles, Buoy/B → Pull Buoy.
+
+### Example
+Given this email text:
+```
+Warm Up:
+400 Ch
+4x75 K R:10
+
+Fins On
+3x100 (50K+50Sw) @1:40-2:10
+
+Fins Off, Pads & Buoy On
+4x75 Sw @1:10-1:30
+
+Pads & Buoy Off
+Warm Down:
+200 Ch
+```
+
+Parse as these sections:
+- Section "Warm Up" — equipment_context: [], sets have equipment: []
+- Section "Fins Kick/Swim" — equipment_context: ["Fins"], sets have equipment: ["Fins"]
+- Section "Paddles & Buoy Swim" — equipment_context: ["Paddles", "Pull Buoy"], sets have equipment: ["Paddles", "Pull Buoy"]
+- Section "Warm Down" — equipment_context: [], sets have equipment: []
+
 ## Key Rules
 
-- **Equipment transitions**: Lines like "Fins On", "Fins Off, Pads & Buoy On" create equipment \
-context that applies to subsequent sets until the next transition.
 - **Named variants**: A line with swimmer names (e.g., "Patricia/Will/Dustin") followed by \
 different sets = a variant workout. Store it in the `variants` array.
 - **Preserve original notation**: Store both canonical names (stroke="Kick") and shorthand \

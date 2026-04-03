@@ -158,6 +158,90 @@ def test_validate_workout_includes_yardage_json():
     assert '"estimated": 1000' in result
 
 
+def test_validate_equipment_context_without_set_equipment():
+    """Warn when section has equipment_context but sets have empty equipment."""
+    workout = Workout(
+        sections=[
+            Section(
+                name="Fins Set",
+                equipment_context=["Fins"],
+                sets=[SetItem(repeats=3, distance=100, stroke="Kick", equipment=[])],
+            ),
+        ],
+    )
+    result = validate_workout(workout.model_dump_json())
+    assert "equipment_context" in result
+    assert "empty equipment" in result
+
+
+def test_validate_equipment_consistent():
+    """No equipment warnings when section context matches set equipment."""
+    workout = Workout(
+        workout_type=WorkoutType.AEROBIC,
+        sections=[
+            Section(
+                name="Warm Up",
+                sets=[SetItem(repeats=1, distance=400, stroke="Choice")],
+            ),
+            Section(
+                name="Fins Kick",
+                equipment_context=["Fins"],
+                sets=[
+                    SetItem(repeats=3, distance=100, stroke="Kick", equipment=["Fins"]),
+                ],
+            ),
+            Section(
+                name="Warm Down",
+                sets=[SetItem(repeats=1, distance=200, stroke="Choice")],
+            ),
+        ],
+    )
+    result = validate_workout(workout.model_dump_json())
+    assert "equipment_context" not in result
+    assert "empty equipment" not in result
+
+
+def test_validate_equipment_mismatch():
+    """Warn when set equipment doesn't match section equipment_context."""
+    workout = Workout(
+        sections=[
+            Section(
+                name="Paddles Set",
+                equipment_context=["Paddles"],
+                sets=[
+                    SetItem(
+                        repeats=4, distance=75, stroke="Swim",
+                        equipment=["Fins"],  # Mismatch!
+                    ),
+                ],
+            ),
+        ],
+    )
+    result = validate_workout(workout.model_dump_json())
+    assert "doesn't match" in result or "doesn't match" in result.replace("\u2019", "'")
+
+
+def test_validate_unknown_equipment():
+    """Warn when equipment names are not in the known set."""
+    workout = Workout(
+        sections=[
+            Section(
+                name="Snorkel Set",
+                equipment_context=["Snorkel"],
+                sets=[
+                    SetItem(
+                        repeats=4, distance=100, stroke="Swim",
+                        equipment=["Snorkel"],
+                    ),
+                ],
+            ),
+        ],
+    )
+    result = validate_workout(workout.model_dump_json())
+    assert "unknown equipment" in result.lower()
+    assert "Snorkel" in result
+
+
 def test_flag_unknown():
     result = flag_unknown("TX", "50K+50Sw TX", "unknown_abbreviation")
     assert "TX" in result

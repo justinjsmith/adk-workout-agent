@@ -107,6 +107,36 @@ def test_prompt_warns_against_wrong_field_names():
     assert "rest_type" in PARSER_SYSTEM_PROMPT  # warns against this mistake
 
 
+def test_prompt_has_equipment_transition_section():
+    """Parser prompt must have a dedicated equipment transitions section."""
+    assert "## Equipment Transitions" in PARSER_SYSTEM_PROMPT
+    assert "active_equipment" in PARSER_SYSTEM_PROMPT
+
+
+def test_prompt_has_equipment_state_rules():
+    """Parser prompt must document stateful equipment tracking rules."""
+    prompt = PARSER_SYSTEM_PROMPT
+    # On/Off rules
+    assert "On" in prompt and "Off" in prompt
+    assert "Fins On" in prompt
+    assert "Fins Off" in prompt
+    # Compound transitions
+    assert "Pads & Buoy On" in prompt
+    # Section boundary rule
+    assert "section boundaries" in prompt.lower() or "section boundary" in prompt.lower()
+    # Inheritance
+    assert "equipment_context" in prompt
+
+
+def test_prompt_has_equipment_transition_example():
+    """Parser prompt must include a concrete equipment transition parsing example."""
+    prompt = PARSER_SYSTEM_PROMPT
+    # Should show multi-section flow with equipment changes
+    assert "Fins Kick/Swim" in prompt or "equipment_context" in prompt
+    assert '["Fins"]' in prompt
+    assert '["Paddles", "Pull Buoy"]' in prompt
+
+
 def test_prompt_has_example():
     """Parser prompt must include a concrete JSON example."""
     assert '"Kick"' in PARSER_SYSTEM_PROMPT
