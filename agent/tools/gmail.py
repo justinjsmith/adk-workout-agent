@@ -125,10 +125,7 @@ def fetch_coach_emails(
         query += f" after:{after_date}"
 
     results = (
-        service.users()
-        .messages()
-        .list(userId="me", q=query, maxResults=max_results)
-        .execute()
+        service.users().messages().list(userId="me", q=query, maxResults=max_results).execute()
     )
 
     messages = results.get("messages", [])
@@ -136,10 +133,7 @@ def fetch_coach_emails(
 
     for msg_stub in messages:
         msg = (
-            service.users()
-            .messages()
-            .get(userId="me", id=msg_stub["id"], format="full")
-            .execute()
+            service.users().messages().get(userId="me", id=msg_stub["id"], format="full").execute()
         )
 
         headers = msg.get("payload", {}).get("headers", [])
@@ -174,12 +168,7 @@ def fetch_email_by_id(message_id: str) -> dict:
     """Fetch a single email by Gmail message ID."""
     service = _get_gmail_service()
 
-    msg = (
-        service.users()
-        .messages()
-        .get(userId="me", id=message_id, format="full")
-        .execute()
-    )
+    msg = service.users().messages().get(userId="me", id=message_id, format="full").execute()
 
     headers = msg.get("payload", {}).get("headers", [])
     subject = _get_header(headers, "Subject")

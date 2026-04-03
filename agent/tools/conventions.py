@@ -1,23 +1,47 @@
-"""ADK tools for loading conventions and managing the knowledge base."""
+"""ADK tools for loading conventions and managing the knowledge base.
+
+Loads conventions from Firestore when STORAGE_BACKEND=firestore,
+falling back to the seed JSON file.
+"""
 
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 
+from shared.config import STORAGE_BACKEND
 from shared.schema import ConventionsDoc
 
-CONVENTIONS_SEED = Path(__file__).resolve().parent.parent.parent / "conventions" / "seed.json"
+logger = logging.getLogger(__name__)
 
-# In-memory cache of conventions (later replaced by Firestore)
+CONVENTIONS_SEED = Path(__file__).resolve().parent.parent.parent / "conventions" / "seed.json"
+CONVENTIONS_COLLECTION = "conventions"
+CONVENTIONS_DOC_ID = "current"
+
+# In-memory cache of conventions
 _conventions_cache: ConventionsDoc | None = None
+
+
+def _load_conventions_from_firestore() -> ConventionsDoc | None:
+    """Try to load conventions from Firestore. Returns None on failure."""
+    try:
+        from shared.firestore import get_firestore_client
+
+        db = get_firestore_client()
+        doc = db.collection(CONVENTIONS_COLLECTION).document(CONVENTIONS_DOC_ID).get()
+        if not doc.exists:
+            return None
+        return ConventionsDoc(**doc.to_dict())
+    except Exception as e:
+        logger.warning("Could not load conventions from Firestore: %s", e)
+        return None
 
 
 def _load_conventions_from_seed() -> ConventionsDoc:
     """Load conventions from the seed JSON file."""
     data = json.loads(CONVENTIONS_SEED.read_text())
 
-    # Transform the flat JSON into ConventionsDoc structure
     from shared.schema import (
         Abbreviation,
         StructuralRule,
@@ -39,15 +63,26 @@ def _load_conventions_from_seed() -> ConventionsDoc:
     )
 
 
+def _load_conventions() -> ConventionsDoc:
+    """Load conventions from Firestore (if configured) or seed file."""
+    if STORAGE_BACKEND == "firestore":
+        doc = _load_conventions_from_firestore()
+        if doc is not None:
+            return doc
+        logger.info("Falling back to seed conventions")
+    return _load_conventions_from_seed()
+
+
 def get_conventions_text() -> str:
     """Return conventions as formatted text for embedding in prompts.
+
 
     This is used to pre-load conventions into the parser prompt,
     eliminating the need for a tool call at runtime.
     """
     global _conventions_cache
     if _conventions_cache is None:
-        _conventions_cache = _load_conventions_from_seed()
+        _conventions_cache = _load_conventions()
 
     doc = _conventions_cache
 
@@ -90,7 +125,7 @@ def lookup_abbreviation(abbreviation: str) -> str:
     """
     global _conventions_cache
     if _conventions_cache is None:
-        _conventions_cache = _load_conventions_from_seed()
+        _conventions_cache = _load_conventions()
 
     doc = _conventions_cache
     info = doc.abbreviations.get(abbreviation)

@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "flask-web",
+      "runtimeExecutable": "/opt/homebrew/bin/uv",
+      "runtimeArgs": ["run", "--extra", "dev", "python", "-m", "flask", "--app", "web.app", "run", "--debug", "--port", "${PORT}"],
+      "port": 5000,
+      "autoPort": true
+    }
+  ]
+}

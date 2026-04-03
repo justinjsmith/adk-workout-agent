@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}{{ workout.date or 'Workout' }} - {{ (workout.day_of_week or '')|capitalize }}{% endblock %}
+
+{% block content %}
+<div class="detail-header">
+  <div>
+    <h1>{{ (workout.day_of_week or '')|capitalize }} {{ workout.date or '' }}</h1>
+    <span class="badge type-badge" style="background: {{ type_colors.get(workout.workout_type, '#757575') }}">
+      {{ workout.workout_type or 'unknown' }}
+    </span>
+    <span class="badge status-badge {{ workout.status or 'pending_review' }}">
+      {{ (workout.status or 'pending_review')|replace('_', ' ') }}
+    </span>
+    {% if workout.total_yardage is mapping and workout.total_yardage.get('estimated') %}
+      <span class="yardage-label">{{ workout.total_yardage.estimated }}y total</span>
+    {% elif workout.total_yardage and workout.total_yardage is not mapping and workout.total_yardage.estimated %}
+      <span class="yardage-label">{{ workout.total_yardage.estimated }}y total</span>
+    {% endif %}
+  </div>
+  <div class="detail-actions">
+    <a href="/workout/{{ workout.id }}/print{% if selected_lane %}?lane={{ selected_lane }}{% endif %}" class="btn btn-outline">Print</a>
+  </div>
+</div>
+
+{# Lane selector #}
+<div class="lane-selector">
+  <a href="/workout/{{ workout.id }}" class="lane-chip {% if not selected_lane %}active{% endif %}">All</a>
+  {% for lane in lane_keys %}
+    <a href="/workout/{{ workout.id }}?lane={{ lane }}"
+       class="lane-chip {% if selected_lane == lane %}active{% endif %}">{{ lane }}</a>
+  {% endfor %}
+</div>
+
+{# Sections #}
+{% for section in workout.sections or [] %}
+<div class="section-card">
+  <h2 class="section-name">{{ section.name if section is mapping else section['name'] }}</h2>
+  {% set equip = section.equipment_context if section is mapping else section.get('equipment_context', []) %}
+  {% if equip %}
+    <div class="equipment-context">{{ equip|join(', ') }}</div>
+  {% endif %}
+
+  <table class="sets-table">
+    <thead>
+      <tr>
+        <th>Set</th>
+        <th>Stroke</th>
+        <th>Interval</th>
+        <th>Rest</th>
+        <th>Equipment</th>
+        <th>Instructions</th>
+        {% if not selected_lane %}
+          {% for lane in lane_keys %}
+            <th class="lane-col">{{ lane }}</th>
+          {% endfor %}
+        {% else %}
+          <th class="lane-col">{{ selected_lane }}</th>
+        {% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% set sets = section.sets if section is mapping else section.get('sets', []) %}
+      {% for s in sets %}
+        {% set set_data = s if s is mapping else {} %}
+        <tr>
+          <td class="set-distance">
+            <strong>{{ set_data.get('distance_display', '') or (set_data.get('repeats', '') ~ 'x' ~ set_data.get('distance', '') if set_data.get('distance') else '') }}</strong>
+          </td>
+          <td>
+            {{ set_data.get('stroke', '') or '' }}
+            {% if set_data.get('stroke_short') %}
+              <span class="abbrev">({{ set_data.stroke_short }})</span>
+            {% endif %}
+          </td>
+          <td>
+            {% set interval = set_data.get('interval') %}
+            {% if interval is mapping %}
+              {{ interval.get('display') or interval.get('value') or '' }}
+            {% endif %}
+          </td>
+          <td>
+            {% set rest = set_data.get('rest') %}
+            {% if rest is mapping %}
+              {{ rest.get('display') or '' }}
+            {% endif %}
+          </td>
+          <td>{{ (set_data.get('equipment') or [])|join(', ') }}</td>
+          <td>{{ set_data.get('instruction', '') or '' }}</td>
+          {# Lane intervals #}
+          {% set li = set_data.get('lane_intervals') %}
+          {% if not selected_lane %}
+            {% for lane in lane_keys %}
+              <td class="lane-col">
+                {% if li is mapping %}{{ li.get(lane, '') }}{% endif %}
+              </td>
+            {% endfor %}
+          {% else %}
+            <td class="lane-col">
+              {% if li is mapping %}{{ li.get(selected_lane, '') }}{% endif %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+
+{# Variants #}
+{% for variant in workout.variants or [] %}
+<div class="section-card variant-card">
+  {% set v = variant if variant is mapping else {} %}
+  <h2 class="section-name">Variant: {{ v.get('name', '') }}</h2>
+  <div class="variant-swimmers">{{ (v.get('target_swimmers') or [])|join(', ') }}</div>
+  {% for section in v.get('sections', []) %}
+    {% set sec = section if section is mapping else {} %}
+    <h3>{{ sec.get('name', '') }}</h3>
+    <ul class="variant-sets">
+      {% for s in sec.get('sets', []) %}
+        {% set sd = s if s is mapping else {} %}
+        <li>{{ sd.get('raw_text', '') or sd.get('distance_display', '') }}</li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+</div>
+{% endfor %}
+
+{# Analysis #}
+{% set analysis = workout.analysis if workout.analysis is mapping else (workout.get('analysis') if workout is mapping else None) %}
+{% if analysis is mapping %}
+<div class="section-card analysis-card">
+  <h2 class="section-name">Workout Analysis</h2>
+
+  {% if analysis.get('energy_systems') %}
+  <div class="analysis-field">
+    <strong>Energy Systems:</strong>
+    {% for es in analysis.energy_systems %}
+      <span class="badge energy-badge">{{ es|replace('_', ' ') }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if analysis.get('workout_narrative') %}
+  <div class="analysis-field">
+    <strong>Narrative:</strong>
+    <p>{{ analysis.workout_narrative }}</p>
+  </div>
+  {% endif %}
+
+  {% if analysis.get('coaching_intent') %}
+  <div class="analysis-field">
+    <strong>Coaching Intent:</strong>
+    <p>{{ analysis.coaching_intent }}</p>
+  </div>
+  {% endif %}
+
+  {% if analysis.get('effort_profile') %}
+  <div class="analysis-field">
+    <strong>Effort Profile:</strong>
+    <div class="effort-profile">
+      {% for ep in analysis.effort_profile %}
+        {% set epd = ep if ep is mapping else {} %}
+        <div class="effort-bar-group">
+          <span class="effort-label">{{ epd.get('section', '') }}</span>
+          <div class="effort-bar" style="width: {{ epd.get('intensity_pct', 0) }}%"></div>
+          <span class="effort-value">{{ epd.get('intensity_pct', 0) }}%</span>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+{# Flags #}
+{% if workout.flags or (workout is mapping and workout.get('flags')) %}
+  {% set flags = workout.flags if workout.flags is sequence else workout.get('flags', []) %}
+  {% if flags %}
+  <div class="section-card flags-card">
+    <h2 class="section-name">Flags</h2>
+    <ul>
+      {% for flag in flags %}
+        {% set fd = flag if flag is mapping else {} %}
+        <li>
+          <span class="badge flag-badge">{{ fd.get('type', '')|replace('_', ' ') }}</span>
+          {{ fd.get('text', '') }}
+          {% if fd.get('context') %}<span class="flag-context">{{ fd.context }}</span>{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+{% endif %}
+{% endblock %}

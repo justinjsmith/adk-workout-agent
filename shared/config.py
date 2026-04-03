@@ -27,5 +27,9 @@ GMAIL_SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 MODEL_SONNET = "anthropic/claude-sonnet-4-20250514"
 MODEL_HAIKU = "anthropic/claude-haiku-4-5-20251001"
 
+# Storage backend: "local" (JSON files) or "firestore"
+STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "local")
+
 # Flask
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "change-me")
+FLASK_ENV = os.getenv("FLASK_ENV", "development")
