@@ -7,6 +7,7 @@ import json
 from shared.schema import LaneIntervals, Workout, YardageEstimate
 
 LANE_KEYS = ["L6", "L5", "L4", "L3", "L2", "L1"]
+KNOWN_EQUIPMENT = {"Fins", "Paddles", "Pull Buoy"}
 
 
 def _parse_lane_reps(lane_rep_counts: LaneIntervals | None, default_repeats: int) -> dict[str, int]:
@@ -101,6 +102,34 @@ def validate_workout(workout_json: str) -> str:
                 )
             if s.repeats and s.repeats > 50:
                 warnings.append(f"Repeat count {s.repeats} in '{section.name}' seems very high.")
+
+    # Check equipment consistency
+    for section in workout.sections:
+        ctx = section.equipment_context
+        for s in section.sets:
+            if ctx and not s.equipment:
+                warnings.append(
+                    f"Section '{section.name}' has equipment_context {ctx} but a set "
+                    f"has empty equipment. Sets should inherit from equipment_context."
+                )
+                break  # One warning per section is enough
+            if s.equipment and ctx and set(s.equipment) != set(ctx):
+                warnings.append(
+                    f"Section '{section.name}': set equipment {s.equipment} doesn't match "
+                    f"equipment_context {ctx}."
+                )
+                break
+
+        # Check for unknown equipment names
+        all_equip = set(ctx)
+        for s in section.sets:
+            all_equip.update(s.equipment)
+        unknown = all_equip - KNOWN_EQUIPMENT
+        if unknown:
+            warnings.append(
+                f"Section '{section.name}' has unknown equipment: {sorted(unknown)}. "
+                f"Known equipment: {sorted(KNOWN_EQUIPMENT)}."
+            )
 
     # Calculate yardage
     yardage = calculate_yardage(workout)
