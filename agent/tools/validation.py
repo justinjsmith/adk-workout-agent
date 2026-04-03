@@ -4,11 +4,63 @@ from __future__ import annotations
 
 import json
 
-from shared.schema import Workout
+from shared.schema import LaneIntervals, Workout, YardageEstimate
+
+LANE_KEYS = ["L6", "L5", "L4", "L3", "L2", "L1"]
+
+
+def _parse_lane_reps(lane_rep_counts: LaneIntervals | None, default_repeats: int) -> dict[str, int]:
+    """Extract per-lane rep counts, falling back to default_repeats."""
+    result = {}
+    for lane in LANE_KEYS:
+        val = getattr(lane_rep_counts, lane, None) if lane_rep_counts else None
+        if val is not None:
+            try:
+                result[lane] = int(val)
+            except (ValueError, TypeError):
+                result[lane] = default_repeats
+        else:
+            result[lane] = default_repeats
+    return result
+
+
+def calculate_yardage(workout: Workout) -> YardageEstimate:
+    """Calculate total yardage from parsed workout sections.
+
+    Returns a YardageEstimate with:
+    - estimated: sum of (repeats * distance) using default rep counts
+    - by_lane: per-lane totals when any set has lane_rep_counts
+    """
+    estimated_total = 0
+    lane_totals: dict[str, int] = {lane: 0 for lane in LANE_KEYS}
+    has_lane_variation = False
+
+    for section in workout.sections:
+        for s in section.sets:
+            if not s.distance:
+                continue
+            estimated_total += s.distance * s.repeats
+            lane_reps = _parse_lane_reps(s.lane_rep_counts, s.repeats)
+            for lane in LANE_KEYS:
+                lane_totals[lane] += s.distance * lane_reps[lane]
+            if s.lane_rep_counts:
+                has_lane_variation = True
+
+    by_lane = None
+    if has_lane_variation:
+        by_lane = LaneIntervals(**{lane: str(total) for lane, total in lane_totals.items()})
+
+    return YardageEstimate(
+        estimated=estimated_total if estimated_total > 0 else None,
+        by_lane=by_lane,
+    )
 
 
 def validate_workout(workout_json: str) -> str:
     """Validate a parsed workout for structural completeness and reasonableness.
+
+    Calculates total_yardage and includes it in the report so the agent can
+    populate the field in the final workout object.
 
     Args:
         workout_json: JSON string of the parsed Workout object.
@@ -52,12 +104,9 @@ def validate_workout(workout_json: str) -> str:
                     f"Repeat count {s.repeats} in '{section.name}' seems very high."
                 )
 
-    # Estimate total yardage
-    total = 0
-    for section in workout.sections:
-        for s in section.sets:
-            if s.distance and s.repeats:
-                total += s.distance * s.repeats
+    # Calculate yardage
+    yardage = calculate_yardage(workout)
+    total = yardage.estimated or 0
 
     if total > 0:
         if total < 1000:
@@ -85,6 +134,15 @@ def validate_workout(workout_json: str) -> str:
 
     if total > 0:
         report_lines.append(f"\nEstimated total yardage: {total}y")
+        if yardage.by_lane:
+            report_lines.append("\nPer-lane yardage:")
+            for lane in LANE_KEYS:
+                val = getattr(yardage.by_lane, lane)
+                if val is not None:
+                    report_lines.append(f"  {lane}: {val}y")
+
+    report_lines.append("\n### total_yardage JSON (copy into workout)")
+    report_lines.append(json.dumps(yardage.model_dump(exclude_none=True)))
 
     return "\n".join(report_lines)
 

@@ -20,9 +20,10 @@ equipment transitions, and any named-swimmer variants.
 equipment, instructions, and lane-specific intervals where present.
 5. Classify the workout type using the heuristics below (see Workout Type Classification).
 6. Score your confidence in the parse (see Confidence Scoring below).
-7. Call `validate_workout` to check the parsed result.
+7. Call `validate_workout` to check the parsed result. The validation report includes a \
+calculated `total_yardage` JSON block — copy it into your workout object before storing.
 8. If you encounter any abbreviation or pattern you can't confidently resolve, call `flag_unknown`.
-9. Call `store_workout` with the final structured result.
+9. Call `store_workout` with the final structured result (including `total_yardage`).
 
 ## Conventions (Pre-loaded)
 
@@ -125,80 +126,99 @@ When lanes have different rep counts due to `(Nx)`, store the modifier in `lane_
 
 ## Output JSON Schema
 
-Your output must conform exactly to this schema. Getting it right the first time avoids \
-validation retries.
+Your output MUST conform exactly to the Pydantic schema below. Using wrong field names \
+(e.g., `stroke_type` instead of `stroke`, `time_limit` instead of `interval`, or bare \
+`rest_type` strings instead of a `Rest` object) will cause validation failures.
 
-### Workout (top level)
-```json
-{{
-  "email_message_id": "string (from input)",
-  "email_thread_id": "string (from input)",
-  "date": "YYYY-MM-DD",
-  "day_of_week": "monday|tuesday|...|sunday (lowercase)",
-  "week_of": "YYYY-MM-DD (Monday of that week)",
-  "workout_type": "aerobic|threshold|sprint|distance|mixed",
-  "practice_time": "5:30-7:00 AM (if mentioned, else null)",
-  "location": "string or null",
-  "variant": "null for default workout",
-  "confidence": 0.85,
-  "flags": [
-    {{"type": "unknown_abbreviation|unknown_pattern|validation_warning|consistency_warning",
-     "text": "the problematic text",
-     "context": "surrounding text"}}
-  ],
-  "sections": ["...see Section below..."],
-  "variants": ["...see Variant below..."],
-  "total_yardage": {{
-    "estimated": 4500,
-    "by_lane": {{"L6": "5000", "L5": "4800", "L4": "4500", "L3": "4500", "L2": "4200", "L1": "4000"}}
-  }}
-}}
+### SetItem fields (each set within a section):
 ```
-
-### Section
-```json
 {{
-  "name": "Warm Up|Main Set|Equipment Set|Swim Set|Warm Down|etc.",
-  "equipment_context": ["Fins", "Paddles"],
-  "sets": ["...see SetItem below..."],
-  "raw_text": "original text for this section"
-}}
-```
-
-### SetItem
-```json
-{{
-  "repeats": 4,
-  "distance": 75,
-  "distance_display": "4x75",
-  "stroke": "Swim|Kick|Pull|Choice|Freestyle|IM|Stroke",
-  "stroke_short": "Sw|K|P|Ch|Fr|IM|ST",
-  "equipment": ["Fins"],
-  "interval": {{
-    "type": "flat|range|split|time_cap",
-    "value": "1:20 (for flat)",
-    "fast": ":50 (for range, L6 time)",
-    "slow": "1:10 (for range, L1 time)",
-    "display": "@50-1:10"
+  "repeats": 4,                          // int, default 1
+  "distance": 75,                        // int, total yards per repeat
+  "distance_display": "4x75",            // string, coach's original notation
+  "stroke": "Kick",                      // string, canonical name: "Swim", "Kick", "Pull", "Choice", etc.
+  "stroke_short": "K",                   // string, coach's abbreviation: "Sw", "K", "P", "Ch"
+  "equipment": ["Fins"],                 // list of strings
+  "interval": {{                          // Interval OBJECT (not a string or "time_limit")
+    "type": "flat",                      //   one of: "flat", "range", "split", "time_cap"
+    "value": "1:20",                     //   for flat intervals
+    "fast": null,                        //   for range intervals (L6 time)
+    "slow": null,                        //   for range intervals (L1 time)
+    "display": "@1:20"                   //   original notation
   }},
-  "rest": {{
-    "type": "rest|active_rest",
-    "seconds": 10,
-    "display": "R:10"
+  "rest": {{                              // Rest OBJECT (not a string)
+    "type": "rest",                      //   one of: "rest", "active_rest"
+    "seconds": 10,                       //   int
+    "display": "R:10"                    //   original notation
   }},
-  "instruction": "Build|Fast In Heats|F/E, E/F|Descend|etc.",
-  "lane_intervals": {{"L6": "1:30", "L5": "1:35", "L4": "1:40", "L3": "1:45", "L2": "1:50", "L1": "2:00"}},
-  "lane_rep_counts": {{"L4": "3", "L3": "3"}},
-  "raw_text": "4x75 K R:10"
+  "instruction": "Build",                // string, e.g. "F/E, E/F", "Fast In Heats"
+  "lane_intervals": {{                    // LaneIntervals object, when lanes have different intervals
+    "L6": "1:30", "L5": "1:35", "L4": "1:40",
+    "L3": "1:45", "L2": "1:50", "L1": "2:00"
+  }},
+  "lane_rep_counts": null,               // LaneIntervals object, when lanes do different # of reps
+  "raw_text": "4x75 K R:10"             // original email text for this set
 }}
 ```
 
-### Variant
+### Section fields:
+```
+{{
+  "name": "Warm Up",                     // "Warm Up", "Main Set", "Equipment Set", "Warm Down", etc.
+  "equipment_context": ["Fins"],         // equipment active for the entire section
+  "sets": [ ... ],                       // array of SetItem objects (see above)
+  "raw_text": "..."                      // original email text for this section
+}}
+```
+
+### Top-level Workout fields you MUST populate:
+- `date`: The workout date (YYYY-MM-DD)
+- `day_of_week`: Lowercase day name
+- `week_of`: Monday of the workout week (YYYY-MM-DD)
+- `workout_type`: One of "aerobic", "threshold", "sprint", "distance", "mixed"
+- `confidence`: Float 0.0-1.0 reflecting parse quality
+- `email_message_id`: From the input metadata
+- `email_thread_id`: From the input metadata
+- `sections`: Array of Section objects (see above)
+- `total_yardage`: Yardage estimate from the validation report (includes `estimated` and \
+optional `by_lane` when lanes have different rep counts)
+- `flags`: Any unresolved items
+
+### Example — a minimal parsed set:
 ```json
 {{
-  "name": "Friday Patricia",
-  "target_swimmers": ["Patricia", "Will", "Dustin"],
-  "sections": ["...same Section structure..."]
+  "sections": [
+    {{
+      "name": "Warm Up",
+      "equipment_context": [],
+      "sets": [
+        {{
+          "repeats": 1,
+          "distance": 400,
+          "distance_display": "400",
+          "stroke": "Choice",
+          "stroke_short": "Ch",
+          "equipment": [],
+          "interval": null,
+          "rest": null,
+          "instruction": null,
+          "raw_text": "400 Ch"
+        }},
+        {{
+          "repeats": 4,
+          "distance": 75,
+          "distance_display": "4x75",
+          "stroke": "Kick",
+          "stroke_short": "K",
+          "equipment": [],
+          "interval": null,
+          "rest": {{"type": "rest", "seconds": 10, "display": "R:10"}},
+          "instruction": null,
+          "raw_text": "4x75 K R:10"
+        }}
+      ]
+    }}
+  ]
 }}
 ```
 
