@@ -131,34 +131,6 @@ def validate_workout(workout_json: str) -> str:
                 f"Known equipment: {sorted(KNOWN_EQUIPMENT)}."
             )
 
-    # Check equipment consistency
-    for section in workout.sections:
-        ctx = section.equipment_context
-        for s in section.sets:
-            if ctx and not s.equipment:
-                warnings.append(
-                    f"Section '{section.name}' has equipment_context {ctx} but a set "
-                    f"has empty equipment. Sets should inherit from equipment_context."
-                )
-                break  # One warning per section is enough
-            if s.equipment and ctx and set(s.equipment) != set(ctx):
-                warnings.append(
-                    f"Section '{section.name}': set equipment {s.equipment} doesn't match "
-                    f"equipment_context {ctx}."
-                )
-                break
-
-        # Check for unknown equipment names
-        all_equip = set(ctx)
-        for s in section.sets:
-            all_equip.update(s.equipment)
-        unknown = all_equip - KNOWN_EQUIPMENT
-        if unknown:
-            warnings.append(
-                f"Section '{section.name}' has unknown equipment: {sorted(unknown)}. "
-                f"Known equipment: {sorted(KNOWN_EQUIPMENT)}."
-            )
-
     # Calculate yardage
     yardage = calculate_yardage(workout)
     total = yardage.estimated or 0
