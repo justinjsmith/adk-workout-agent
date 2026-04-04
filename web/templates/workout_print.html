@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ (workout.day_of_week or '')|capitalize }} {{ workout.date or '' }} - Print</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='print.css') }}">
+</head>
+<body>
+  <header class="print-header">
+    <h1>Stingrays — {{ (workout.day_of_week or '')|capitalize }} {{ workout.date or '' }}</h1>
+    <div class="print-meta">
+      <span>{{ workout.workout_type or '' }}</span>
+      {% if workout.total_yardage is mapping and workout.total_yardage.get('estimated') %}
+        <span>{{ workout.total_yardage.estimated }}y</span>
+      {% endif %}
+      {% if selected_lane %}
+        <span>Lane: {{ selected_lane }}</span>
+      {% endif %}
+    </div>
+  </header>
+
+  {% for section in workout.sections or [] %}
+    {% set sec = section if section is mapping else {} %}
+    <div class="print-section">
+      <h2>{{ sec.get('name', '') }}</h2>
+      {% set equip = sec.get('equipment_context', []) %}
+      {% if equip %}
+        <div class="print-equipment">{{ equip|join(', ') }}</div>
+      {% endif %}
+
+      {% for s in sec.get('sets', []) %}
+        {% set sd = s if s is mapping else {} %}
+        <div class="print-set">
+          <span class="print-set-main">
+            <strong>{{ sd.get('distance_display', '') or '' }}</strong>
+            {{ sd.get('stroke', '') or '' }}
+          </span>
+          {% set interval = sd.get('interval') %}
+          {% if interval is mapping and (interval.get('display') or interval.get('value')) %}
+            <span class="print-interval">{{ interval.get('display') or interval.get('value') }}</span>
+          {% endif %}
+          {% set rest = sd.get('rest') %}
+          {% if rest is mapping and rest.get('display') %}
+            <span class="print-rest">{{ rest.display }}</span>
+          {% endif %}
+          {% if sd.get('equipment') %}
+            <span class="print-equip">{{ sd.equipment|join(', ') }}</span>
+          {% endif %}
+          {% if sd.get('instruction') %}
+            <span class="print-instruction">{{ sd.instruction }}</span>
+          {% endif %}
+          {% set li = sd.get('lane_intervals') %}
+          {% if li is mapping and selected_lane and li.get(selected_lane) %}
+            <span class="print-lane-interval">@ {{ li[selected_lane] }}</span>
+          {% elif li is mapping and not selected_lane %}
+            <div class="print-lane-grid">
+              {% for lane in ["L6","L5","L4","L3","L2","L1"] %}
+                {% if li.get(lane) %}
+                  <span>{{ lane }}: {{ li[lane] }}</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</body>
+</html>

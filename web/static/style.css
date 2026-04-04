@@ -1,0 +1,265 @@
+/* === Base === */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Roboto", "Segoe UI", system-ui, sans-serif;
+  color: #212121;
+  background: #fafafa;
+  line-height: 1.5;
+}
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 3rem;
+}
+
+/* === Nav === */
+.top-nav {
+  background: #1565c0;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+}
+.nav-brand {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* === Badges === */
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #fff;
+}
+.status-badge {
+  background: #757575;
+}
+.status-badge.approved { background: #388e3c; }
+.status-badge.pending_review { background: #f9a825; color: #212121; }
+.status-badge.needs_correction { background: #d32f2f; }
+
+.energy-badge {
+  background: #5c6bc0;
+}
+.flag-badge {
+  background: #e65100;
+  font-size: 0.7rem;
+}
+
+/* === Workout List === */
+h1 { margin-bottom: 1rem; font-size: 1.5rem; }
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #757575;
+}
+.empty-state .hint { font-size: 0.875rem; margin-top: 0.5rem; }
+
+.week-group { margin-bottom: 2rem; }
+.week-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #616161;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.workout-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+}
+
+.workout-card {
+  display: block;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: box-shadow 0.15s;
+}
+.workout-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.workout-date { font-weight: 600; font-size: 1rem; }
+.workout-day { color: #757575; font-size: 0.875rem; }
+
+.card-body { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #757575;
+}
+
+/* === Detail Page === */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.detail-header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+.yardage-label {
+  font-size: 0.875rem;
+  color: #616161;
+  margin-left: 0.5rem;
+}
+
+.btn {
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-outline {
+  border: 1px solid #1565c0;
+  color: #1565c0;
+  background: transparent;
+}
+.btn-outline:hover { background: #e3f2fd; }
+
+/* === Lane Selector === */
+.lane-selector {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.lane-chip {
+  padding: 0.3rem 0.75rem;
+  border: 1px solid #bdbdbd;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #424242;
+  background: #fff;
+  transition: all 0.15s;
+}
+.lane-chip:hover { border-color: #1565c0; color: #1565c0; }
+.lane-chip.active {
+  background: #1565c0;
+  color: #fff;
+  border-color: #1565c0;
+}
+
+/* === Section Cards === */
+.section-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+.section-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1565c0;
+}
+.equipment-context {
+  font-size: 0.8rem;
+  color: #f57c00;
+  margin-bottom: 0.5rem;
+}
+
+/* === Sets Table === */
+.sets-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.sets-table th {
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.75rem;
+  color: #757575;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+.sets-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #f5f5f5;
+  vertical-align: top;
+}
+.sets-table tr:hover td { background: #f5f5f5; }
+
+.set-distance strong { white-space: nowrap; }
+.abbrev { color: #9e9e9e; font-size: 0.8em; }
+
+.lane-col {
+  text-align: center;
+  min-width: 50px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* === Variant === */
+.variant-card { border-left: 3px solid #7b1fa2; }
+.variant-swimmers { font-size: 0.85rem; color: #616161; margin-bottom: 0.5rem; }
+.variant-sets { padding-left: 1.25rem; font-size: 0.85rem; }
+.variant-sets li { margin-bottom: 0.25rem; }
+
+/* === Analysis === */
+.analysis-card { border-left: 3px solid #5c6bc0; }
+.analysis-field { margin-bottom: 0.75rem; }
+.analysis-field p { margin-top: 0.25rem; color: #424242; font-size: 0.9rem; }
+
+.effort-profile { margin-top: 0.5rem; }
+.effort-bar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.effort-label {
+  width: 100px;
+  font-size: 0.8rem;
+  text-align: right;
+  color: #616161;
+}
+.effort-bar {
+  height: 16px;
+  background: linear-gradient(90deg, #66bb6a, #ffa726, #ef5350);
+  border-radius: 3px;
+  max-width: 300px;
+}
+.effort-value { font-size: 0.75rem; color: #757575; }
+
+/* === Flags === */
+.flags-card { border-left: 3px solid #e65100; }
+.flags-card ul { list-style: none; padding: 0; }
+.flags-card li { margin-bottom: 0.5rem; font-size: 0.85rem; }
+.flag-context { color: #9e9e9e; font-size: 0.8em; margin-left: 0.25rem; }
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .workout-cards { grid-template-columns: 1fr; }
+  .detail-header { flex-direction: column; gap: 0.5rem; }
+  .sets-table { font-size: 0.8rem; }
+  .sets-table th, .sets-table td { padding: 0.3rem; }
+}
