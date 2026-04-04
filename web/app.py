@@ -29,6 +29,10 @@ def create_app() -> Flask:
             "type_colors": TYPE_COLORS,
         }
 
+    @app.route("/health")
+    def health():
+        return {"status": "ok"}
+
     @app.route("/")
     def workout_list():
         weeks = get_workouts_by_week()

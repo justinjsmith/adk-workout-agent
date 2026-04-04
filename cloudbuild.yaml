@@ -1,0 +1,38 @@
+steps:
+  # Build the container image
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["build", "-t", "gcr.io/$PROJECT_ID/adk-workout-agent:$COMMIT_SHA", "."]
+
+  # Push to Container Registry
+  - name: "gcr.io/cloud-builders/docker"
+    args: ["push", "gcr.io/$PROJECT_ID/adk-workout-agent:$COMMIT_SHA"]
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "adk-workout-agent"
+      - "--image"
+      - "gcr.io/$PROJECT_ID/adk-workout-agent:$COMMIT_SHA"
+      - "--region"
+      - "us-east1"
+      - "--platform"
+      - "managed"
+      - "--min-instances"
+      - "0"
+      - "--max-instances"
+      - "2"
+      - "--memory"
+      - "512Mi"
+      - "--timeout"
+      - "120"
+      - "--set-env-vars"
+      - "STORAGE_BACKEND=firestore,GCP_PROJECT_ID=$PROJECT_ID"
+      - "--set-secrets"
+      - "ANTHROPIC_API_KEY=ANTHROPIC_API_KEY:latest,COACH_EMAIL=COACH_EMAIL:latest,USER_EMAIL=USER_EMAIL:latest,FLASK_SECRET_KEY=FLASK_SECRET_KEY:latest"
+      - "--allow-unauthenticated"
+
+images:
+  - "gcr.io/$PROJECT_ID/adk-workout-agent:$COMMIT_SHA"

@@ -82,6 +82,13 @@ def client(app):
     return app.test_client()
 
 
+def test_health_endpoint(client):
+    """Health endpoint returns ok for Cloud Run probes."""
+    resp = client.get("/health")
+    assert resp.status_code == 200
+    assert resp.json == {"status": "ok"}
+
+
 def test_workout_list_empty(client):
     """Empty list shows empty state."""
     with patch("web.app.get_workouts_by_week", return_value=[]):
