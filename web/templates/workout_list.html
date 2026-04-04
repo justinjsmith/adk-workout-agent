@@ -7,6 +7,7 @@
 
 {% if not weeks %}
   <div class="empty-state">
+    <md-icon class="empty-icon">pool</md-icon>
     <p>No workouts parsed yet.</p>
     <p class="hint">Run the parser against a coach email to get started.</p>
   </div>
@@ -17,28 +18,27 @@
   <h2 class="week-header">Week of {{ week.week_of }}</h2>
   <div class="workout-cards">
     {% for w in week.workouts %}
-    <a href="/workout/{{ w.id }}" class="workout-card">
-      <div class="card-header">
-        <span class="workout-date">{{ w.date or '?' }}</span>
-        <span class="workout-day">{{ (w.day_of_week or '')|capitalize }}</span>
-      </div>
-      <div class="card-body">
-        <span class="badge type-badge" style="background: {{ type_colors.get(w.workout_type, '#757575') }}">
-          {{ w.workout_type or 'unknown' }}
-        </span>
-        <span class="badge status-badge {{ w.status or 'pending_review' }}">
-          {{ (w.status or 'pending_review')|replace('_', ' ') }}
-        </span>
-      </div>
-      <div class="card-footer">
-        {% if w.total_yardage and w.total_yardage.estimated %}
-          <span class="yardage">{{ w.total_yardage.estimated }}y</span>
-        {% elif w.total_yardage is mapping and w.total_yardage.get('estimated') %}
-          <span class="yardage">{{ w.total_yardage.estimated }}y</span>
-        {% endif %}
-        {% if w.confidence %}
-          <span class="confidence">{{ (w.confidence * 100)|int }}% confidence</span>
-        {% endif %}
+    <a href="/workout/{{ w.id }}" class="workout-card-link">
+      <div class="workout-card">
+        <div class="card-header">
+          <span class="workout-date">{{ w.date or '?' }}</span>
+          <span class="workout-day">{{ (w.day_of_week or '')|capitalize }}</span>
+        </div>
+        <div class="card-body">
+          <md-assist-chip label="{{ w.workout_type or 'unknown' }}" class="chip-type chip-type--{{ w.workout_type or 'unknown' }}"></md-assist-chip>
+          <md-assist-chip label="{{ (w.status or 'pending_review')|replace('_', ' ') }}" class="chip-status chip-status--{{ w.status or 'pending_review' }}"></md-assist-chip>
+        </div>
+        <md-divider></md-divider>
+        <div class="card-footer">
+          {% if w.total_yardage and w.total_yardage.estimated %}
+            <span class="yardage">{{ w.total_yardage.estimated }}y</span>
+          {% elif w.total_yardage is mapping and w.total_yardage.get('estimated') %}
+            <span class="yardage">{{ w.total_yardage.estimated }}y</span>
+          {% endif %}
+          {% if w.confidence %}
+            <span class="confidence">{{ (w.confidence * 100)|int }}%</span>
+          {% endif %}
+        </div>
       </div>
     </a>
     {% endfor %}

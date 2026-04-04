@@ -6,31 +6,39 @@
 <div class="detail-header">
   <div>
     <h1>{{ (workout.day_of_week or '')|capitalize }} {{ workout.date or '' }}</h1>
-    <span class="badge type-badge" style="background: {{ type_colors.get(workout.workout_type, '#757575') }}">
-      {{ workout.workout_type or 'unknown' }}
-    </span>
-    <span class="badge status-badge {{ workout.status or 'pending_review' }}">
-      {{ (workout.status or 'pending_review')|replace('_', ' ') }}
-    </span>
-    {% if workout.total_yardage is mapping and workout.total_yardage.get('estimated') %}
-      <span class="yardage-label">{{ workout.total_yardage.estimated }}y total</span>
-    {% elif workout.total_yardage and workout.total_yardage is not mapping and workout.total_yardage.estimated %}
-      <span class="yardage-label">{{ workout.total_yardage.estimated }}y total</span>
-    {% endif %}
+    <div class="detail-chips">
+      <md-assist-chip label="{{ workout.workout_type or 'unknown' }}" class="chip-type chip-type--{{ workout.workout_type or 'unknown' }}"></md-assist-chip>
+      <md-assist-chip label="{{ (workout.status or 'pending_review')|replace('_', ' ') }}" class="chip-status chip-status--{{ workout.status or 'pending_review' }}"></md-assist-chip>
+      {% if workout.total_yardage is mapping and workout.total_yardage.get('estimated') %}
+        <span class="yardage-label">{{ workout.total_yardage.estimated }}y total</span>
+      {% elif workout.total_yardage and workout.total_yardage is not mapping and workout.total_yardage.estimated %}
+        <span class="yardage-label">{{ workout.total_yardage.estimated }}y total</span>
+      {% endif %}
+    </div>
   </div>
   <div class="detail-actions">
-    <a href="/workout/{{ workout.id }}/print{% if selected_lane %}?lane={{ selected_lane }}{% endif %}" class="btn btn-outline">Print</a>
+    <a href="/workout/{{ workout.id }}/print{% if selected_lane %}?lane={{ selected_lane }}{% endif %}">
+      <md-outlined-button>
+        <md-icon slot="icon">print</md-icon>
+        Print
+      </md-outlined-button>
+    </a>
   </div>
 </div>
 
 {# Lane selector #}
-<div class="lane-selector">
-  <a href="/workout/{{ workout.id }}" class="lane-chip {% if not selected_lane %}active{% endif %}">All</a>
+<md-chip-set class="lane-selector">
+  <md-filter-chip label="All"
+    {% if not selected_lane %}selected{% endif %}
+    onclick="window.location.href='/workout/{{ workout.id }}'">
+  </md-filter-chip>
   {% for lane in lane_keys %}
-    <a href="/workout/{{ workout.id }}?lane={{ lane }}"
-       class="lane-chip {% if selected_lane == lane %}active{% endif %}">{{ lane }}</a>
+    <md-filter-chip label="{{ lane }}"
+      {% if selected_lane == lane %}selected{% endif %}
+      onclick="window.location.href='/workout/{{ workout.id }}?lane={{ lane }}'">
+    </md-filter-chip>
   {% endfor %}
-</div>
+</md-chip-set>
 
 {# Sections #}
 {% for section in workout.sections or [] %}
@@ -38,7 +46,10 @@
   <h2 class="section-name">{{ section.name if section is mapping else section['name'] }}</h2>
   {% set equip = section.equipment_context if section is mapping else section.get('equipment_context', []) %}
   {% if equip %}
-    <div class="equipment-context">{{ equip|join(', ') }}</div>
+    <div class="equipment-context">
+      <md-icon class="equip-icon">fitness_center</md-icon>
+      {{ equip|join(', ') }}
+    </div>
   {% endif %}
 
   <table class="sets-table">
@@ -130,14 +141,19 @@
 {% set analysis = workout.analysis if workout.analysis is mapping else (workout.get('analysis') if workout is mapping else None) %}
 {% if analysis is mapping %}
 <div class="section-card analysis-card">
-  <h2 class="section-name">Workout Analysis</h2>
+  <h2 class="section-name">
+    <md-icon class="section-icon">analytics</md-icon>
+    Workout Analysis
+  </h2>
 
   {% if analysis.get('energy_systems') %}
   <div class="analysis-field">
     <strong>Energy Systems:</strong>
-    {% for es in analysis.energy_systems %}
-      <span class="badge energy-badge">{{ es|replace('_', ' ') }}</span>
-    {% endfor %}
+    <md-chip-set class="energy-chips">
+      {% for es in analysis.energy_systems %}
+        <md-assist-chip label="{{ es|replace('_', ' ') }}" class="chip-energy"></md-assist-chip>
+      {% endfor %}
+    </md-chip-set>
   </div>
   {% endif %}
 
@@ -178,12 +194,15 @@
   {% set flags = workout.flags if workout.flags is sequence else workout.get('flags', []) %}
   {% if flags %}
   <div class="section-card flags-card">
-    <h2 class="section-name">Flags</h2>
+    <h2 class="section-name">
+      <md-icon class="section-icon">flag</md-icon>
+      Flags
+    </h2>
     <ul>
       {% for flag in flags %}
         {% set fd = flag if flag is mapping else {} %}
         <li>
-          <span class="badge flag-badge">{{ fd.get('type', '')|replace('_', ' ') }}</span>
+          <md-assist-chip label="{{ fd.get('type', '')|replace('_', ' ') }}" class="chip-flag"></md-assist-chip>
           {{ fd.get('text', '') }}
           {% if fd.get('context') %}<span class="flag-context">{{ fd.context }}</span>{% endif %}
         </li>
