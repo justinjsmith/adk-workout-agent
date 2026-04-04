@@ -1,10 +1,24 @@
+/* === Material 3 Theme Tokens === */
+:root {
+  --md-sys-color-primary: #1565c0;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #d1e4ff;
+  --md-sys-color-on-primary-container: #001d36;
+  --md-sys-color-surface: #fafafa;
+  --md-sys-color-on-surface: #212121;
+  --md-sys-color-surface-container-low: #ffffff;
+  --md-sys-color-outline: #bdbdbd;
+  --md-sys-color-outline-variant: #e0e0e0;
+  --md-icon-font: 'Material Symbols Outlined';
+}
+
 /* === Base === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: "Roboto", "Segoe UI", system-ui, sans-serif;
-  color: #212121;
-  background: #fafafa;
+  color: var(--md-sys-color-on-surface);
+  background: var(--md-sys-color-surface);
   line-height: 1.5;
 }
 
@@ -18,40 +32,88 @@ a { color: inherit; text-decoration: none; }
 
 /* === Nav === */
 .top-nav {
-  background: #1565c0;
-  color: #fff;
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
   padding: 0.75rem 1.5rem;
 }
 .nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--md-sys-color-on-primary);
+}
+.nav-brand md-icon {
+  --md-icon-size: 24px;
+  color: var(--md-sys-color-on-primary);
 }
 
-/* === Badges === */
-.badge {
-  display: inline-block;
-  padding: 0.15rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: #fff;
-}
-.status-badge {
-  background: #757575;
-}
-.status-badge.approved { background: #388e3c; }
-.status-badge.pending_review { background: #f9a825; color: #212121; }
-.status-badge.needs_correction { background: #d32f2f; }
+/* === Material Chip Overrides === */
 
-.energy-badge {
-  background: #5c6bc0;
+/* Type chips — colored by workout type */
+.chip-type--aerobic {
+  --md-assist-chip-outline-color: #1976d2;
+  --md-assist-chip-label-text-color: #1976d2;
 }
-.flag-badge {
-  background: #e65100;
-  font-size: 0.7rem;
+.chip-type--threshold {
+  --md-assist-chip-outline-color: #f57c00;
+  --md-assist-chip-label-text-color: #f57c00;
+}
+.chip-type--sprint {
+  --md-assist-chip-outline-color: #d32f2f;
+  --md-assist-chip-label-text-color: #d32f2f;
+}
+.chip-type--distance {
+  --md-assist-chip-outline-color: #388e3c;
+  --md-assist-chip-label-text-color: #388e3c;
+}
+.chip-type--mixed {
+  --md-assist-chip-outline-color: #7b1fa2;
+  --md-assist-chip-label-text-color: #7b1fa2;
+}
+.chip-type--unknown {
+  --md-assist-chip-outline-color: #757575;
+  --md-assist-chip-label-text-color: #757575;
+}
+
+/* Status chips */
+.chip-status--approved {
+  --md-assist-chip-outline-color: #388e3c;
+  --md-assist-chip-label-text-color: #388e3c;
+}
+.chip-status--pending_review {
+  --md-assist-chip-outline-color: #f9a825;
+  --md-assist-chip-label-text-color: #e65100;
+}
+.chip-status--needs_correction {
+  --md-assist-chip-outline-color: #d32f2f;
+  --md-assist-chip-label-text-color: #d32f2f;
+}
+
+/* Energy system chips */
+.chip-energy {
+  --md-assist-chip-outline-color: #5c6bc0;
+  --md-assist-chip-label-text-color: #5c6bc0;
+}
+
+/* Flag chips */
+.chip-flag {
+  --md-assist-chip-outline-color: #e65100;
+  --md-assist-chip-label-text-color: #e65100;
+}
+
+/* Chip sizing */
+md-assist-chip {
+  --md-assist-chip-container-height: 26px;
+  --md-assist-chip-label-text-size: 0.75rem;
+  --md-assist-chip-label-text-weight: 600;
+}
+
+md-filter-chip {
+  --md-filter-chip-selected-container-color: var(--md-sys-color-primary);
+  --md-filter-chip-selected-label-text-color: var(--md-sys-color-on-primary);
+  --md-filter-chip-selected-outline-width: 0;
 }
 
 /* === Workout List === */
@@ -63,33 +125,41 @@ h1 { margin-bottom: 1rem; font-size: 1.5rem; }
   color: #757575;
 }
 .empty-state .hint { font-size: 0.875rem; margin-top: 0.5rem; }
+.empty-icon {
+  --md-icon-size: 48px;
+  color: #bdbdbd;
+  display: block;
+  margin: 0 auto 1rem;
+}
 
 .week-group { margin-bottom: 2rem; }
 .week-header {
   font-size: 1rem;
   font-weight: 600;
   color: #616161;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--md-sys-color-outline-variant);
   padding-bottom: 0.25rem;
   margin-bottom: 0.75rem;
 }
 
 .workout-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 0.75rem;
 }
 
+.workout-card-link { display: block; }
+
 .workout-card {
-  display: block;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
   padding: 1rem;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.2s, transform 0.2s;
 }
 .workout-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  transform: translateY(-1px);
 }
 
 .card-header {
@@ -101,13 +171,23 @@ h1 { margin-bottom: 1rem; font-size: 1.5rem; }
 .workout-date { font-weight: 600; font-size: 1rem; }
 .workout-day { color: #757575; font-size: 0.875rem; }
 
-.card-body { display: flex; gap: 0.5rem; margin-bottom: 0.5rem; }
+.card-body {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
 
 .card-footer {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
   color: #757575;
+  padding-top: 0.5rem;
+}
+
+md-divider {
+  --md-divider-color: var(--md-sys-color-outline-variant);
 }
 
 /* === Detail Page === */
@@ -119,71 +199,67 @@ h1 { margin-bottom: 1rem; font-size: 1.5rem; }
 }
 .detail-header h1 {
   font-size: 1.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+.detail-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 .yardage-label {
   font-size: 0.875rem;
   color: #616161;
-  margin-left: 0.5rem;
 }
 
-.btn {
+.detail-actions a {
   display: inline-block;
-  padding: 0.4rem 1rem;
-  border-radius: 4px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
 }
-.btn-outline {
-  border: 1px solid #1565c0;
-  color: #1565c0;
-  background: transparent;
+md-outlined-button {
+  --md-outlined-button-outline-color: var(--md-sys-color-primary);
+  --md-outlined-button-label-text-color: var(--md-sys-color-primary);
 }
-.btn-outline:hover { background: #e3f2fd; }
 
 /* === Lane Selector === */
 .lane-selector {
-  display: flex;
-  gap: 0.4rem;
   margin-bottom: 1.25rem;
-  flex-wrap: wrap;
 }
-.lane-chip {
-  padding: 0.3rem 0.75rem;
-  border: 1px solid #bdbdbd;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: #424242;
-  background: #fff;
-  transition: all 0.15s;
-}
-.lane-chip:hover { border-color: #1565c0; color: #1565c0; }
-.lane-chip.active {
-  background: #1565c0;
-  color: #fff;
-  border-color: #1565c0;
+md-filter-chip {
+  cursor: pointer;
 }
 
 /* === Section Cards === */
 .section-card {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  background: var(--md-sys-color-surface-container-low);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: 12px;
   padding: 1rem 1.25rem;
   margin-bottom: 1rem;
 }
 .section-name {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   font-size: 1.1rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
-  color: #1565c0;
+  color: var(--md-sys-color-primary);
+}
+.section-icon {
+  --md-icon-size: 20px;
+  color: var(--md-sys-color-primary);
 }
 .equipment-context {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
   font-size: 0.8rem;
   color: #f57c00;
   margin-bottom: 0.5rem;
+}
+.equip-icon {
+  --md-icon-size: 16px;
+  color: #f57c00;
 }
 
 /* === Sets Table === */
@@ -200,7 +276,7 @@ h1 { margin-bottom: 1rem; font-size: 1.5rem; }
   text-transform: uppercase;
   letter-spacing: 0.03em;
   padding: 0.4rem 0.5rem;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid var(--md-sys-color-outline-variant);
 }
 .sets-table td {
   padding: 0.4rem 0.5rem;
@@ -228,6 +304,7 @@ h1 { margin-bottom: 1rem; font-size: 1.5rem; }
 .analysis-card { border-left: 3px solid #5c6bc0; }
 .analysis-field { margin-bottom: 0.75rem; }
 .analysis-field p { margin-top: 0.25rem; color: #424242; font-size: 0.9rem; }
+.energy-chips { margin-top: 0.25rem; }
 
 .effort-profile { margin-top: 0.5rem; }
 .effort-bar-group {
@@ -253,8 +330,14 @@ h1 { margin-bottom: 1rem; font-size: 1.5rem; }
 /* === Flags === */
 .flags-card { border-left: 3px solid #e65100; }
 .flags-card ul { list-style: none; padding: 0; }
-.flags-card li { margin-bottom: 0.5rem; font-size: 0.85rem; }
-.flag-context { color: #9e9e9e; font-size: 0.8em; margin-left: 0.25rem; }
+.flags-card li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+.flag-context { color: #9e9e9e; font-size: 0.8em; }
 
 /* === Responsive === */
 @media (max-width: 768px) {

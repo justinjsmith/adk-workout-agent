@@ -4,12 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Stingrays Workouts{% endblock %}</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script type="importmap">
+    {
+      "imports": {
+        "@material/web/": "https://esm.run/@material/web/"
+      }
+    }
+  </script>
+  <script type="module">
+    import '@material/web/all.js';
+  </script>
   {% block extra_head %}{% endblock %}
 </head>
 <body>
   <nav class="top-nav">
-    <a href="/" class="nav-brand">Stingrays Workouts</a>
+    <a href="/" class="nav-brand">
+      <md-icon>pool</md-icon>
+      Stingrays Workouts
+    </a>
   </nav>
   <main class="container">
     {% block content %}{% endblock %}
